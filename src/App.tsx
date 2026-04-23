@@ -5112,7 +5112,7 @@ export default function App() {
           
           querySnapshot.forEach((doc) => {
             const user = doc.data();
-            if (user.displayName) {
+            if (user.displayName !== undefined) {
                const key = user.username || doc.id; 
                localDb[key] = { ...localDb[key], ...user };
                nextState[key] = localDb[key];
@@ -5416,7 +5416,9 @@ export default function App() {
       localStorage.setItem('appUsers', JSON.stringify(localDb));
       
       if (auth.currentUser) {
-        setDoc(doc(db, 'users', auth.currentUser.uid), updatedObj).catch(() => {});
+        setDoc(doc(db, 'users', auth.currentUser.uid), updatedObj).catch((e) => {
+          console.error("Firebase sync error: ", e);
+        });
       }
     }
   }, [
@@ -8561,7 +8563,7 @@ export default function App() {
                         <th className="py-3 px-4 font-bold border-b border-white/10">Tên Đăng Nhập</th>
                         <th className="py-3 px-4 font-bold border-b border-white/10">Lớp</th>
                         <th className="py-3 px-4 font-bold border-b border-white/10">Cấp Độ</th>
-                        <th className="py-3 px-4 font-bold border-b border-white/10">Thời gian (Phút)</th>
+                        <th className="py-3 px-4 font-bold border-b border-white/10">Thời gian học</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -8593,7 +8595,10 @@ export default function App() {
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-[#00e5ff]" /> {data.totalLearningTime ? Math.floor(data.totalLearningTime / 60) : 0}</span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5 text-[#00e5ff]" /> 
+                                {data.totalLearningTime ? `${Math.floor(data.totalLearningTime / 60)}p ${data.totalLearningTime % 60}s` : '0p'}
+                              </span>
                             </td>
                           </tr>
                         );
