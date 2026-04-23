@@ -5014,7 +5014,7 @@ const getLevelTitle = (level: number) => {
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [currentView, setCurrentView] = useState<'home' | 'profile' | 'spin' | 'math_game' | 'missions' | 'reports'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'profile' | 'spin' | 'math_game' | 'missions' | 'reports' | 'parent_stats'>('home');
   const [currentSubject, setCurrentSubject] = useState<'math' | 'vietnamese' | 'english'>('math');
   const [currentOperation, setCurrentOperation] = useState<'addition' | 'subtraction' | 'multiplication' | 'division' | 'comparison' | 'missing_number' | 'word_problem' | 'sequence' | 'geometry' | 'geometry_3' | 'measurement' | 'measurement_3' | 'fraction_3' | 'expression' | 'phonetics' | 'word_matching' | 'spelling' | 'vietnamese_spelling_3' | 'vietnamese_word_type_3' | 'vietnamese_sentence_punctuation_3' | 'vietnamese_vocabulary_3' | 'vietnamese_rhetoric_3' | 'vietnamese_fill_in_blank_3' | 'vietnamese_sentence_structure_3' | 'vietnamese_sentence_rearrangement_3' | 'vocabulary' | 'fill_in_blank' | 'simple_sentence' | 'clock' | 'english_vocabulary_3' | 'english_colors_numbers_3' | 'english_abc' | 'english_numbers' | 'english_colors' | 'english_animals' | 'english_hello' | 'english_family' | 'english_grammar_3' | 'english_translation_3' | 'english_feelings' | 'english_clothes' | 'english_in_on_under' | 'english_house' | 'english_transport' | 'word_type' | 'sentence_type' | 'punctuation' | 'math_add_sub_large_4' | 'math_mul_large_4' | 'math_div_large_4' | 'math_fraction_4' | 'math_divisibility_4' | 'math_average_4' | 'math_sum_diff_4' | 'math_geometry_4' | 'math_measurement_4' | 'math_expression_4' | 'vietnamese_spelling_4' | 'vietnamese_word_formation_4' | 'vietnamese_sentence_type_4' | 'vietnamese_sentence_component_4' | 'vietnamese_idiom_4' | 'vietnamese_rhetoric_4' | 'vietnamese_fill_in_blank_4' | 'vietnamese_sentence_rearrangement_4' | 'english_vocabulary_4' | 'english_present_simple_4' | 'english_v_ing_4' | 'english_there_is_are_4' | 'english_can_cant_4' | 'english_time_days_4' | 'english_prepositions_4' | 'english_translation_4' | 'math_decimal_5' | 'math_percent_5' | 'math_adv_fraction_5' | 'math_volume_5' | 'math_velocity_5' | 'math_circle_5' | 'math_area_5' | 'math_unit_conversion_5' | 'math_expression_5' | 'math_word_problem_5' | 'vietnamese_spelling_5' | 'vietnamese_compound_sentence_5' | 'vietnamese_conjunction_5' | 'vietnamese_homonym_5' | 'vietnamese_rhetoric_5' | 'vietnamese_sentence_linking_5' | 'vietnamese_adv_vocabulary_5' | 'vietnamese_sentence_rearrangement_5' | 'english_vocabulary_5' | 'english_past_simple_5' | 'english_future_simple_5' | 'english_should_must_5' | 'english_comparisons_5' | 'english_tenses_5' | 'english_reading_5' | 'english_translation_5'>('addition');
   
@@ -7694,6 +7694,10 @@ export default function App() {
                 <SettingRow label="Xem báo cáo" icon="📊">
                   <button onClick={() => setCurrentView('reports')} className="bg-white/10 hover:bg-white/20 text-white px-5 py-1.5 rounded-xl text-[13px] sm:text-[15px] font-bold transition-colors">Hồ sơ</button>
                 </SettingRow>
+                <div className="h-[1px] w-full bg-white/5 my-2"></div>
+                <SettingRow label="Thống kê tài khoản" icon="📈">
+                  <button onClick={() => setCurrentView('parent_stats')} className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white px-5 py-1.5 rounded-xl text-[13px] sm:text-[15px] font-bold transition-colors shadow-lg">Xem chi tiết</button>
+                </SettingRow>
               </div>
 
               {/* Logout Button */}
@@ -8410,6 +8414,71 @@ export default function App() {
 
                 </div>
 
+              </div>
+            </div>
+          ) : currentView === 'parent_stats' ? (
+            /* --- PARENT STATS VIEW --- */
+            <div className="flex-1 overflow-y-auto pb-24 sm:pb-28 hide-scrollbar z-10 animate-in fade-in slide-in-from-right-4 duration-300 flex flex-col items-center w-full relative">
+              <div className="bg-[#2b1b54]/80 p-3 sm:p-4 flex items-center border-b border-white/5 w-full sticky top-0 z-20">
+                <button onClick={() => setCurrentView('profile')} className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+                  <span className="text-white font-bold text-xl">←</span>
+                </button>
+                <h2 className="text-white font-bold text-[18px] sm:text-[20px] ml-4 flex items-center gap-2">
+                  📈 Thống Kê Tài Khoản
+                </h2>
+              </div>
+              <div className="w-full px-4 sm:px-6 pt-6 flex flex-col gap-4 max-w-3xl">
+                <p className="text-[#d4c5f9] font-medium text-[14px]">
+                  Bảng liệt kê tất cả các tài khoản học sinh đã đăng ký và điểm số hoạt động hiện tại.
+                </p>
+                <div className="bg-[#4a3671]/60 rounded-[24px] border border-white/5 shadow-lg overflow-hidden mt-2">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-[#2b1b54]/50 text-[#d4c5f9] text-[12px] sm:text-[14px]">
+                        <th className="py-3 px-4 font-bold border-b border-white/10">Tên Đăng Nhập</th>
+                        <th className="py-3 px-4 font-bold border-b border-white/10">Lớp</th>
+                        <th className="py-3 px-4 font-bold border-b border-white/10">Cấp Độ</th>
+                        <th className="py-3 px-4 font-bold border-b border-white/10">Thời gian (Phút)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(JSON.parse(localStorage.getItem('appUsers') || '{}')).map(([username, data]: [string, any], idx) => {
+                        return (
+                          <tr key={username} className={`text-white text-[13px] sm:text-[15px] border-b border-white/5 hover:bg-white/5 transition-colors ${idx % 2 === 0 ? '' : 'bg-[#2b1b54]/10'}`}>
+                            <td className="py-3 px-4 font-bold flex flex-col">
+                              <span>{data.displayName || username}</span>
+                              <span className="text-[10px] text-[#a895d1] opacity-80">@{username}</span>
+                            </td>
+                            <td className="py-3 px-4">
+                              {data.selectedClass === '4' ? 'Mầm non' :
+                               data.selectedClass === '5' ? 'Mẫu giáo' :
+                               data.selectedClass === '1' ? 'Lớp 1' :
+                               data.selectedClass === '2' ? 'Lớp 2' :
+                               data.selectedClass === '3' ? 'Lớp 3' :
+                               data.selectedClass === '4c' ? 'Lớp 4' :
+                               data.selectedClass === '5c' ? 'Lớp 5' : '---'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="bg-[#8b5cf6]/30 text-[#d4c5f9] px-2 py-1 rounded-md text-[11px] sm:text-[12px] font-bold">
+                                Lv. {data.level || '1'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-[#00e5ff]" /> {data.totalLearningTime ? Math.floor(data.totalLearningTime / 60) : 0}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {Object.keys(JSON.parse(localStorage.getItem('appUsers') || '{}')).length === 0 && (
+                         <tr>
+                            <td colSpan={4} className="py-8 text-center text-[#d4c5f9] opacity-70">
+                              Chưa có tài khoản nào được đăng ký
+                            </td>
+                         </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           ) : null}
