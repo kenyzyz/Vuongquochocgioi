@@ -5519,7 +5519,8 @@ export default function App() {
       setCompletedLessons(859);
     } else {
       try {
-        const email = `${loginUsername}@mathkid.app`;
+        const safeUsername = loginUsername.toLowerCase().trim().replace(/[^a-z0-9_]/g, '');
+        const email = `${safeUsername || 'user'}@mathkid.app`;
         const cred = await signInWithEmailAndPassword(auth, email, loginPassword);
         
         const userDoc = await getDoc(doc(db, 'users', cred.user.uid));
@@ -5684,7 +5685,8 @@ export default function App() {
     }
 
     try {
-      const email = `${regUsername}@mathkid.app`;
+      const safeUsername = regUsername.toLowerCase().trim().replace(/[^a-z0-9_]/g, '');
+      const email = `${safeUsername || 'user'}@mathkid.app`;
       const cred = await createUserWithEmailAndPassword(auth, email, regPassword);
       await setDoc(doc(db, 'users', cred.user.uid), newUserObj);
     } catch (err: any) {

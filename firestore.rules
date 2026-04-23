@@ -25,9 +25,9 @@ service cloud.firestore {
 
     // Rules for Users
     match /users/{userId} {
-      // Anyone signed in can read this (for Parent Stats table), 
+      // Anyone can read this (for Parent Stats table), 
       // but write is strictly owner only.
-      allow read: if isSignedIn();
+      allow read: if true;
       
       allow create: if isOwner(userId) 
                     && isValidUserConfig(request.resource.data);
