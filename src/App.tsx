@@ -5106,30 +5106,33 @@ export default function App() {
 
       // Sync users from Firebase
       try {
-        const querySnapshot = await getDocs(collection(db, 'users'));
-        const localDb = JSON.parse(localStorage.getItem('appUsers') || '{}');
-        querySnapshot.forEach((doc) => {
-          const user = doc.data();
-          // Extract username backward from the email we generate "username@mathkid.app"
-          // We don't have the original username explicitly saved, but wait: loginUsername is mostly what we need.
-          // Let's just store the displayName instead if no username is available, or use a derived one.
-          // Wait, we explicitly have 'password' saved in localDB which we don't want to overwrite if not needed, 
-          // but we can merge. We also didn't save username. Oh well, doc.id is the UID! Not the username!
-          // Ah! doc(db, 'users', cred.user.uid) means doc.id is UID! The username is nowhere!
-          // We need to add username to the doc object!
-          if (user.displayName) {
-             const key = user.username || doc.id; 
-             localDb[key] = { ...localDb[key], ...user };
-          }
+        onSnapshot(collection(db, 'users'), (querySnapshot) => {
+          const localDb = JSON.parse(localStorage.getItem('appUsers') || '{}');
+          let nextState = { ...localDb };
+          
+          querySnapshot.forEach((doc) => {
+            const user = doc.data();
+            if (user.displayName) {
+               const key = user.username || doc.id; 
+               localDb[key] = { ...localDb[key], ...user };
+               nextState[key] = localDb[key];
+            }
+          });
+          localStorage.setItem('appUsers', JSON.stringify(localDb));
+          setAllAppUsers(nextState);
         });
-        localStorage.setItem('appUsers', JSON.stringify(localDb));
       } catch (err) {
-        console.log('Firebase fetch failed or not authenticated yet.');
+        console.log('Firebase fetch failed.');
       }
     };
     
     fetchSheet();
   }, []);
+  
+  const [allAppUsers, setAllAppUsers] = useState<Record<string, any>>(() => {
+    return JSON.parse(localStorage.getItem('appUsers') || '{}');
+  });
+
   const [selectedClass, setSelectedClass] = useState(() => localStorage.getItem('selectedClass') || '1');
   
   const [loginUsername, setLoginUsername] = useState('');
@@ -8562,7 +8565,7 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {Object.entries(JSON.parse(localStorage.getItem('appUsers') || '{}'))
+                      {Object.entries(allAppUsers)
                         .sort((a: [string, any], b: [string, any]) => {
                            const timeA = a[1].totalLearningTime || 0;
                            const timeB = b[1].totalLearningTime || 0;
