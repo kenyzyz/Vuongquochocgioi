@@ -5678,12 +5678,22 @@ export default function App() {
       }
     };
 
+    if (regPassword.length < 6) {
+      alert('Mật khẩu quá ngắn. Vui lòng nhập mật khẩu có ít nhất 6 ký tự để bảo mật tài khoản!');
+      return;
+    }
+
     try {
       const email = `${regUsername}@mathkid.app`;
       const cred = await createUserWithEmailAndPassword(auth, email, regPassword);
       await setDoc(doc(db, 'users', cred.user.uid), newUserObj);
     } catch (err: any) {
-      // Continue offline if firebase fails
+      if (err.code === 'auth/email-already-in-use') {
+        alert('Tên đăng nhập này đã có người sử dụng. Vui lòng chọn tên khác!');
+      } else {
+        alert('Có lỗi xảy ra khi kết nối máy chủ Đám mây. Vui lòng thử lại! Lỗi: ' + err.message);
+      }
+      return; // Stop here, don't log them in locally
     }
 
     setIsLoggedIn(true);
