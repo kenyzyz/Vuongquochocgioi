@@ -8446,7 +8446,13 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {Object.entries(JSON.parse(localStorage.getItem('appUsers') || '{}')).map(([username, data]: [string, any], idx) => {
+                      {Object.entries(JSON.parse(localStorage.getItem('appUsers') || '{}'))
+                        .sort((a: [string, any], b: [string, any]) => {
+                           const timeA = a[1].totalLearningTime || 0;
+                           const timeB = b[1].totalLearningTime || 0;
+                           return timeB - timeA;
+                        })
+                        .map(([username, data]: [string, any], idx) => {
                         return (
                           <tr key={username} className={`text-white text-[13px] sm:text-[15px] border-b border-white/5 hover:bg-white/5 transition-colors ${idx % 2 === 0 ? '' : 'bg-[#2b1b54]/10'}`}>
                             <td className="py-3 px-4 font-bold flex flex-col">
