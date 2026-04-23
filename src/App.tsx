@@ -5138,7 +5138,7 @@ export default function App() {
 
   // Math Game State
   const [difficultyMode, setDifficultyMode] = useState<'Tự động' | 'Thủ công'>(() => {
-    return (localStorage.getItem('difficultyMode') as 'Tự động' | 'Thủ công') || 'Thủ công';
+    return (localStorage.getItem('difficultyMode') as 'Tự động' | 'Thủ công') || 'Tự động';
   });
   const [mathLevel, setMathLevel] = useState(() => {
     return localStorage.getItem('mathLevel') || '1';
@@ -5377,7 +5377,7 @@ export default function App() {
       db[validUsername] = {
         ...db[validUsername],
         password: validPassword,
-        displayName, selectedChar, selectedPet, selectedClass,
+        displayName, selectedChar, selectedPet, selectedClass, difficultyMode,
         stars, gems, tickets, level, xp, streakDays, completedLessons,
         totalQuestionsAnswered, totalCorrectAnswers, totalLearningTime,
         missions, rewardsHistory, subjectStats
@@ -5386,7 +5386,7 @@ export default function App() {
     }
   }, [
     isLoggedIn, validUsername, validPassword, 
-    displayName, selectedChar, selectedPet, selectedClass, 
+    displayName, selectedChar, selectedPet, selectedClass, difficultyMode,
     stars, gems, tickets, level, xp, streakDays, completedLessons, 
     totalQuestionsAnswered, totalCorrectAnswers, totalLearningTime, 
     missions, rewardsHistory, subjectStats
@@ -5516,6 +5516,8 @@ export default function App() {
           if (user.missions) setMissions(user.missions);
           if (user.rewardsHistory) setRewardsHistory(user.rewardsHistory);
           if (user.subjectStats) setSubjectStats(user.subjectStats);
+          
+          setDifficultyMode(user.difficultyMode || 'Tự động');
         }
 
         setEarnedRewards(null);
@@ -5563,6 +5565,7 @@ export default function App() {
     db[regUsername] = {
       password: regPassword,
       displayName, selectedChar, selectedPet, selectedClass,
+      difficultyMode: 'Tự động',
       stars: 0, gems: 0, tickets: 0, level: 1, xp: 0, 
       streakDays: 0, completedLessons: 0,
       totalQuestionsAnswered: 0, totalCorrectAnswers: 0, totalLearningTime: 0,
@@ -5608,6 +5611,7 @@ export default function App() {
     setTotalCorrectAnswers(0);
     setTotalLearningTime(0);
     setRewardsHistory([]);
+    setDifficultyMode('Tự động');
     setMissions({
       daily: [
         { id: 'd1', title: 'Chơi 3 lượt', desc: 'Hoàn thành 3 bài học bất kỳ', target: 3, progress: 0, reward: 5, type: 'play', claimed: false },
