@@ -5119,18 +5119,21 @@ export default function App() {
   const [displayName, setDisplayName] = useState(() => localStorage.getItem('displayName') || '');
 
   // Missions State
-  const [missions, setMissions] = useState({
-    daily: [
-      { id: 'd1', title: 'Chơi 3 lượt', desc: 'Hoàn thành 3 bài học bất kỳ', target: 3, progress: 0, reward: 5, type: 'play', claimed: false },
-      { id: 'd2', title: 'Đạt điểm tối đa', desc: '1 lần đạt 10/10 điểm', target: 1, progress: 0, reward: 10, type: '3star', claimed: false },
-      { id: 'd3', title: 'Chăm chỉ học tập', desc: 'Trả lời đúng 20 câu', target: 20, progress: 0, reward: 8, type: 'correct', claimed: false },
-      { id: 'd4', title: 'Học Toán', desc: 'Hoàn thành 1 bài Toán', target: 1, progress: 0, reward: 5, type: 'math', claimed: false },
-      { id: 'd5', title: 'Học Tiếng Việt', desc: 'Hoàn thành 1 bài Tiếng Việt', target: 1, progress: 0, reward: 5, type: 'vietnamese', claimed: false },
-    ],
-    weekly: [
-      { id: 'w1', title: 'Chiến binh tri thức', desc: 'Trả lời đúng 100 câu', target: 100, progress: 2, reward: 30, type: 'correct', claimed: false },
-      { id: 'w2', title: 'Học sinh xuất sắc', desc: '5 lần đạt điểm tối đa', target: 5, progress: 0, reward: 50, type: '3star', claimed: false }
-    ]
+  const [missions, setMissions] = useState(() => {
+    const val = localStorage.getItem('missions');
+    return val ? JSON.parse(val) : {
+      daily: [
+        { id: 'd1', title: 'Chơi 3 lượt', desc: 'Hoàn thành 3 bài học bất kỳ', target: 3, progress: 0, reward: 5, type: 'play', claimed: false },
+        { id: 'd2', title: 'Đạt điểm tối đa', desc: '1 lần đạt 10/10 điểm', target: 1, progress: 0, reward: 10, type: '3star', claimed: false },
+        { id: 'd3', title: 'Chăm chỉ học tập', desc: 'Trả lời đúng 20 câu', target: 20, progress: 0, reward: 8, type: 'correct', claimed: false },
+        { id: 'd4', title: 'Học Toán', desc: 'Hoàn thành 1 bài Toán', target: 1, progress: 0, reward: 5, type: 'math', claimed: false },
+        { id: 'd5', title: 'Học Tiếng Việt', desc: 'Hoàn thành 1 bài Tiếng Việt', target: 1, progress: 0, reward: 5, type: 'vietnamese', claimed: false },
+      ],
+      weekly: [
+        { id: 'w1', title: 'Chiến binh tri thức', desc: 'Trả lời đúng 100 câu', target: 100, progress: 2, reward: 30, type: 'correct', claimed: false },
+        { id: 'w2', title: 'Học sinh xuất sắc', desc: '5 lần đạt điểm tối đa', target: 5, progress: 0, reward: 50, type: '3star', claimed: false }
+      ]
+    };
   });
 
   // Math Game State
@@ -5149,6 +5152,12 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('mathLevel', mathLevel);
   }, [mathLevel]);
+
+  // Sync state to local storage
+  useEffect(() => {
+    localStorage.setItem('missions', JSON.stringify(missions));
+  }, [missions]);
+
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
@@ -5160,12 +5169,18 @@ export default function App() {
   const [maxTime, setMaxTime] = useState(25);
 
   // Game Stats State
-  const [stars, setStars] = useState(() => Number(localStorage.getItem('stars')) || 10);
+  const [stars, setStars] = useState(() => {
+    const val = localStorage.getItem('stars');
+    return val !== null ? Number(val) : 10;
+  });
   const [gems, setGems] = useState(() => {
     const val = localStorage.getItem('gems');
     return val !== null ? Number(val) : 554;
   });
-  const [tickets, setTickets] = useState(() => Number(localStorage.getItem('tickets')) || 0);
+  const [tickets, setTickets] = useState(() => {
+    const val = localStorage.getItem('tickets');
+    return val !== null ? Number(val) : 0;
+  });
   const [level, setLevel] = useState(() => {
     const val = localStorage.getItem('level');
     return val !== null ? Number(val) : 13;
@@ -5184,19 +5199,44 @@ export default function App() {
   });
   const [earnedRewards, setEarnedRewards] = useState<{gems: number, stars: number, xp: number, leveledUp: boolean, newLevel: number} | null>(null);
   
+  useEffect(() => { localStorage.setItem('stars', String(stars)); }, [stars]);
+  useEffect(() => { localStorage.setItem('gems', String(gems)); }, [gems]);
+  useEffect(() => { localStorage.setItem('tickets', String(tickets)); }, [tickets]);
+  useEffect(() => { localStorage.setItem('level', String(level)); }, [level]);
+  useEffect(() => { localStorage.setItem('xp', String(xp)); }, [xp]);
+  useEffect(() => { localStorage.setItem('streakDays', String(streakDays)); }, [streakDays]);
+  useEffect(() => { localStorage.setItem('completedLessons', String(completedLessons)); }, [completedLessons]);
+
   // Reports State
-  const [totalQuestionsAnswered, setTotalQuestionsAnswered] = useState(0);
-  const [totalCorrectAnswers, setTotalCorrectAnswers] = useState(0);
-  const [totalLearningTime, setTotalLearningTime] = useState(0);
-  const [subjectStats, setSubjectStats] = useState<Record<string, { total: number, correct: number, time: number, master: number }>>({
-    math: { total: 0, correct: 0, time: 0, master: 0 },
-    vietnamese: { total: 0, correct: 0, time: 0, master: 0 },
-    english: { total: 0, correct: 0, time: 0, master: 0 },
-    science: { total: 0, correct: 0, time: 0, master: 0 },
-    history: { total: 0, correct: 0, time: 0, master: 0 },
-    ethics: { total: 0, correct: 0, time: 0, master: 0 },
-    informatics: { total: 0, correct: 0, time: 0, master: 0 },
+  const [totalQuestionsAnswered, setTotalQuestionsAnswered] = useState(() => {
+    const val = localStorage.getItem('totalQuestionsAnswered');
+    return val !== null ? Number(val) : 0;
   });
+  const [totalCorrectAnswers, setTotalCorrectAnswers] = useState(() => {
+    const val = localStorage.getItem('totalCorrectAnswers');
+    return val !== null ? Number(val) : 0;
+  });
+  const [totalLearningTime, setTotalLearningTime] = useState(() => {
+    const val = localStorage.getItem('totalLearningTime');
+    return val !== null ? Number(val) : 0;
+  });
+  const [subjectStats, setSubjectStats] = useState<Record<string, { total: number, correct: number, time: number, master: number }>>(() => {
+    const val = localStorage.getItem('subjectStats');
+    return val ? JSON.parse(val) : {
+      math: { total: 0, correct: 0, time: 0, master: 0 },
+      vietnamese: { total: 0, correct: 0, time: 0, master: 0 },
+      english: { total: 0, correct: 0, time: 0, master: 0 },
+      science: { total: 0, correct: 0, time: 0, master: 0 },
+      history: { total: 0, correct: 0, time: 0, master: 0 },
+      ethics: { total: 0, correct: 0, time: 0, master: 0 },
+      informatics: { total: 0, correct: 0, time: 0, master: 0 },
+    };
+  });
+
+  useEffect(() => { localStorage.setItem('totalQuestionsAnswered', String(totalQuestionsAnswered)); }, [totalQuestionsAnswered]);
+  useEffect(() => { localStorage.setItem('totalCorrectAnswers', String(totalCorrectAnswers)); }, [totalCorrectAnswers]);
+  useEffect(() => { localStorage.setItem('totalLearningTime', String(totalLearningTime)); }, [totalLearningTime]);
+  useEffect(() => { localStorage.setItem('subjectStats', JSON.stringify(subjectStats)); }, [subjectStats]);
   
   const getAssetUrl = (list: {name: string, url: string, levels?: {lvl: number, url: string}[]}[], name: string, currentLevel: number, fallback: string) => {
     const item = list.find(x => x.name === name);
@@ -5260,9 +5300,14 @@ export default function App() {
   const [spinRotation, setSpinRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [spinResult, setSpinResult] = useState<{icon: string, text: string, name: string} | null>(null);
-  const [rewardsHistory, setRewardsHistory] = useState([
-    { id: 1, text: '+20', icon: '💎', name: 'Gems!', time: '24/3 19:37' }
-  ]);
+  const [rewardsHistory, setRewardsHistory] = useState<{id: number, text: string, icon: string, name: string, time: string}[]>(() => {
+    const val = localStorage.getItem('rewardsHistory');
+    return val ? JSON.parse(val) : [{ id: 1, text: '+20', icon: '💎', name: 'Gems!', time: '24/3 19:37' }];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('rewardsHistory', JSON.stringify(rewardsHistory));
+  }, [rewardsHistory]);
 
   const segments = [
     { rot: 0, icon: '🍀', text: 'May mắn', type: 'luck', val: 50 },
@@ -5324,6 +5369,29 @@ export default function App() {
     }
   };
 
+  // Continuous sync to appUsers DB
+  useEffect(() => {
+    if (isLoggedIn && validUsername && validUsername !== 'admin1' && validUsername !== '') {
+      const db = JSON.parse(localStorage.getItem('appUsers') || '{}');
+      if (!db[validUsername]) db[validUsername] = {};
+      db[validUsername] = {
+        ...db[validUsername],
+        password: validPassword,
+        displayName, selectedChar, selectedPet, selectedClass,
+        stars, gems, tickets, level, xp, streakDays, completedLessons,
+        totalQuestionsAnswered, totalCorrectAnswers, totalLearningTime,
+        missions, rewardsHistory, subjectStats
+      };
+      localStorage.setItem('appUsers', JSON.stringify(db));
+    }
+  }, [
+    isLoggedIn, validUsername, validPassword, 
+    displayName, selectedChar, selectedPet, selectedClass, 
+    stars, gems, tickets, level, xp, streakDays, completedLessons, 
+    totalQuestionsAnswered, totalCorrectAnswers, totalLearningTime, 
+    missions, rewardsHistory, subjectStats
+  ]);
+
   const handleSpin = () => {
     if (tickets < 1 || isSpinning) return;
 
@@ -5332,8 +5400,29 @@ export default function App() {
     setSpinResult(null);
 
     const extraSpins = 5; // Spin 5 full times
-    const randomDeg = Math.floor(Math.random() * 360);
-    const newRotation = spinRotation + (360 * extraSpins) + randomDeg;
+    
+    // Define weights for each segment (total 1000)
+    // 0: May mắn (5%), 1: x5💎 (30%), 2: x3⭐ (30%), 3: x10💎 (8%)
+    // 4: Ticket (0.5%), 5: x2💎 (25.5%), 6: x5⭐ (0.5%), 7: x20💎 (0.5%)
+    const weights = [50, 300, 300, 80, 5, 255, 5, 5];
+    let rand = Math.floor(Math.random() * 1000);
+    let targetIndex = 0;
+    for (let i = 0; i < weights.length; i++) {
+        rand -= weights[i];
+        if (rand < 0) {
+            targetIndex = i;
+            break;
+        }
+    }
+
+    // Add up to +/- 17 degrees of random noise so it doesn't land perfectly centered every time
+    const offsetInSector = Math.floor(Math.random() * 35) - 17; 
+    let targetDeg = (360 - (targetIndex * 45) + offsetInSector) % 360;
+    if (targetDeg < 0) targetDeg += 360;
+    
+    const diff = targetDeg - (spinRotation % 360);
+    const positiveDiff = diff < 0 ? diff + 360 : diff;
+    const newRotation = spinRotation + (360 * extraSpins) + positiveDiff;
     
     setSpinRotation(newRotation);
 
@@ -5396,12 +5485,56 @@ export default function App() {
       setXp(472);
       setStreakDays(12);
       setCompletedLessons(859);
-    } else if (loginUsername === validUsername && loginPassword === validPassword && validUsername !== '') {
-      setIsLoggedIn(true);
-      setCurrentView('home');
-      // Intentionally not clearing data here since localStorage already loaded it
     } else {
-      setLoginError('Vui lòng kiểm tra lại tài khoản hoặc mật khẩu!');
+      const db = JSON.parse(localStorage.getItem('appUsers') || '{}');
+      // If legacy single user is trying to login, let them load their data if they match validUsername
+      const isLegacy = loginUsername === validUsername && loginPassword === validPassword && validUsername !== '';
+      const user = db[loginUsername] || (isLegacy ? { password: validPassword } : null);
+
+      if (user && user.password === loginPassword) {
+        setIsLoggedIn(true);
+        setCurrentView('home');
+        setValidUsername(loginUsername);
+        
+        if (db[loginUsername]) {
+          setDisplayName(user.displayName || '');
+          setSelectedChar(user.selectedChar || 'Boy');
+          setSelectedPet(user.selectedPet || 'Corgi Béo');
+          setSelectedClass(user.selectedClass || '1');
+          
+          if (user.stars !== undefined) setStars(user.stars);
+          if (user.gems !== undefined) setGems(user.gems);
+          if (user.tickets !== undefined) setTickets(user.tickets);
+          if (user.level !== undefined) setLevel(user.level);
+          if (user.xp !== undefined) setXp(user.xp);
+          if (user.streakDays !== undefined) setStreakDays(user.streakDays);
+          if (user.completedLessons !== undefined) setCompletedLessons(user.completedLessons);
+          if (user.totalQuestionsAnswered !== undefined) setTotalQuestionsAnswered(user.totalQuestionsAnswered);
+          if (user.totalCorrectAnswers !== undefined) setTotalCorrectAnswers(user.totalCorrectAnswers);
+          if (user.totalLearningTime !== undefined) setTotalLearningTime(user.totalLearningTime);
+          
+          if (user.missions) setMissions(user.missions);
+          if (user.rewardsHistory) setRewardsHistory(user.rewardsHistory);
+          if (user.subjectStats) setSubjectStats(user.subjectStats);
+        }
+
+        setEarnedRewards(null);
+        
+        let newMathLevel = '1';
+        switch (user.selectedClass || selectedClass) {
+          case '4': newMathLevel = '1'; break;
+          case '5': newMathLevel = '2'; break;
+          case '1': newMathLevel = '3'; break;
+          case '2': newMathLevel = '4'; break;
+          case '3': 
+          case '4c':
+          case '5c': newMathLevel = '5'; break;
+          default: newMathLevel = '1';
+        }
+        setMathLevel(newMathLevel);
+      } else {
+        setLoginError('Vui lòng kiểm tra lại tài khoản hoặc mật khẩu!');
+      }
     }
   };
 
@@ -5424,6 +5557,40 @@ export default function App() {
 
     setIsLoggedIn(true);
     setCurrentView('home');
+
+    // Create DB entry for new account
+    const db = JSON.parse(localStorage.getItem('appUsers') || '{}');
+    db[regUsername] = {
+      password: regPassword,
+      displayName, selectedChar, selectedPet, selectedClass,
+      stars: 0, gems: 0, tickets: 0, level: 1, xp: 0, 
+      streakDays: 0, completedLessons: 0,
+      totalQuestionsAnswered: 0, totalCorrectAnswers: 0, totalLearningTime: 0,
+      rewardsHistory: [],
+      missions: {
+        daily: [
+          { id: 'd1', title: 'Chơi 3 lượt', desc: 'Hoàn thành 3 bài học bất kỳ', target: 3, progress: 0, reward: 5, type: 'play', claimed: false },
+          { id: 'd2', title: 'Đạt điểm tối đa', desc: '1 lần đạt 10/10 điểm', target: 1, progress: 0, reward: 10, type: '3star', claimed: false },
+          { id: 'd3', title: 'Chăm chỉ học tập', desc: 'Trả lời đúng 20 câu', target: 20, progress: 0, reward: 8, type: 'correct', claimed: false },
+          { id: 'd4', title: 'Học Toán', desc: 'Hoàn thành 1 bài Toán', target: 1, progress: 0, reward: 5, type: 'math', claimed: false },
+          { id: 'd5', title: 'Học Tiếng Việt', desc: 'Hoàn thành 1 bài Tiếng Việt', target: 1, progress: 0, reward: 5, type: 'vietnamese', claimed: false },
+        ],
+        weekly: [
+          { id: 'w1', title: 'Chiến binh tri thức', desc: 'Trả lời đúng 100 câu', target: 100, progress: 0, reward: 30, type: 'correct', claimed: false },
+          { id: 'w2', title: 'Học sinh xuất sắc', desc: '5 lần đạt điểm tối đa', target: 5, progress: 0, reward: 50, type: '3star', claimed: false }
+        ]
+      },
+      subjectStats: {
+        math: { total: 0, correct: 0, time: 0, master: 0 },
+        vietnamese: { total: 0, correct: 0, time: 0, master: 0 },
+        english: { total: 0, correct: 0, time: 0, master: 0 },
+        science: { total: 0, correct: 0, time: 0, master: 0 },
+        history: { total: 0, correct: 0, time: 0, master: 0 },
+        ethics: { total: 0, correct: 0, time: 0, master: 0 },
+        informatics: { total: 0, correct: 0, time: 0, master: 0 },
+      }
+    };
+    localStorage.setItem('appUsers', JSON.stringify(db));
     
     // Clear old data for new account
     setScore(0);
