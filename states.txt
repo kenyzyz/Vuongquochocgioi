@@ -1,0 +1,50 @@
+1:import React, { useState, useEffect } from 'react';
+5015:  const [isLoggedIn, setIsLoggedIn] = useState(false);
+5016:  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+5017:  const [currentView, setCurrentView] = useState<'home' | 'profile' | 'spin' | 'math_game' | 'missions' | 'reports' | 'parent_stats'>('home');
+5018:  const [currentSubject, setCurrentSubject] = useState<'math' | 'vietnamese' | 'english'>('math');
+5019:  const [currentOperation, setCurrentOperation] = useState<'addition' | 'subtraction' | 'multiplication' | 'division' | 'comparison' | 'missing_number' | 'word_problem' | 'sequence' | 'geometry' | 'geometry_3' | 'measurement' | 'measurement_3' | 'fraction_3' | 'expression' | 'phonetics' | 'word_matching' | 'spelling' | 'vietnamese_spelling_3' | 'vietnamese_word_type_3' | 'vietnamese_sentence_punctuation_3' | 'vietnamese_vocabulary_3' | 'vietnamese_rhetoric_3' | 'vietnamese_fill_in_blank_3' | 'vietnamese_sentence_structure_3' | 'vietnamese_sentence_rearrangement_3' | 'vocabulary' | 'fill_in_blank' | 'simple_sentence' | 'clock' | 'english_vocabulary_3' | 'english_colors_numbers_3' | 'english_abc' | 'english_numbers' | 'english_colors' | 'english_animals' | 'english_hello' | 'english_family' | 'english_grammar_3' | 'english_translation_3' | 'english_feelings' | 'english_clothes' | 'english_in_on_under' | 'english_house' | 'english_transport' | 'word_type' | 'sentence_type' | 'punctuation' | 'math_add_sub_large_4' | 'math_mul_large_4' | 'math_div_large_4' | 'math_fraction_4' | 'math_divisibility_4' | 'math_average_4' | 'math_sum_diff_4' | 'math_geometry_4' | 'math_measurement_4' | 'math_expression_4' | 'vietnamese_spelling_4' | 'vietnamese_word_formation_4' | 'vietnamese_sentence_type_4' | 'vietnamese_sentence_component_4' | 'vietnamese_idiom_4' | 'vietnamese_rhetoric_4' | 'vietnamese_fill_in_blank_4' | 'vietnamese_sentence_rearrangement_4' | 'english_vocabulary_4' | 'english_present_simple_4' | 'english_v_ing_4' | 'english_there_is_are_4' | 'english_can_cant_4' | 'english_time_days_4' | 'english_prepositions_4' | 'english_translation_4' | 'math_decimal_5' | 'math_percent_5' | 'math_adv_fraction_5' | 'math_volume_5' | 'math_velocity_5' | 'math_circle_5' | 'math_area_5' | 'math_unit_conversion_5' | 'math_expression_5' | 'math_word_problem_5' | 'vietnamese_spelling_5' | 'vietnamese_compound_sentence_5' | 'vietnamese_conjunction_5' | 'vietnamese_homonym_5' | 'vietnamese_rhetoric_5' | 'vietnamese_sentence_linking_5' | 'vietnamese_adv_vocabulary_5' | 'vietnamese_sentence_rearrangement_5' | 'english_vocabulary_5' | 'english_past_simple_5' | 'english_future_simple_5' | 'english_should_must_5' | 'english_comparisons_5' | 'english_tenses_5' | 'english_reading_5' | 'english_translation_5'>('addition');
+5021:  const [selectedChar, setSelectedChar] = useState(() => localStorage.getItem('selectedChar') || 'Boy');
+5022:  const [selectedPet, setSelectedPet] = useState(() => localStorage.getItem('selectedPet') || 'Corgi Béo');
+5025:  const [characterList, setCharacterList] = useState<{name: string, url: string, levels: {lvl: number, url: string}[]}[]>([]);
+5026:  const [petList, setPetList] = useState<{name: string, url: string, levels: {lvl: number, url: string}[]}[]>([]);
+5107:  const [selectedClass, setSelectedClass] = useState(() => localStorage.getItem('selectedClass') || '1');
+5109:  const [loginUsername, setLoginUsername] = useState('');
+5110:  const [loginPassword, setLoginPassword] = useState('');
+5111:  const [loginError, setLoginError] = useState('');
+5113:  const [regUsername, setRegUsername] = useState('');
+5114:  const [regPassword, setRegPassword] = useState('');
+5116:  const [validUsername, setValidUsername] = useState(() => localStorage.getItem('validUsername') || 'admin1');
+5117:  const [validPassword, setValidPassword] = useState(() => localStorage.getItem('validPassword') || '123456');
+5119:  const [displayName, setDisplayName] = useState(() => localStorage.getItem('displayName') || '');
+5122:  const [missions, setMissions] = useState(() => {
+5140:  const [difficultyMode, setDifficultyMode] = useState<'Tự động' | 'Thủ công'>(() => {
+5143:  const [mathLevel, setMathLevel] = useState(() => {
+5146:  const [mathQuestions, setMathQuestions] = useState<any[]>([]);
+5161:  const [currentQIndex, setCurrentQIndex] = useState(0);
+5162:  const [score, setScore] = useState(0);
+5163:  const [combo, setCombo] = useState(0);
+5164:  const [lives, setLives] = useState(3);
+5165:  const [selectedAnswer, setSelectedAnswer] = useState<number | string | null>(null);
+5166:  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+5167:  const [feedback, setFeedback] = useState<{title: string, sub: string, type: 'correct' | 'incorrect'} | null>(null);
+5168:  const [timeLeft, setTimeLeft] = useState(25);
+5169:  const [maxTime, setMaxTime] = useState(25);
+5172:  const [stars, setStars] = useState(() => {
+5176:  const [gems, setGems] = useState(() => {
+5180:  const [tickets, setTickets] = useState(() => {
+5184:  const [level, setLevel] = useState(() => {
+5188:  const [xp, setXp] = useState(() => {
+5192:  const [streakDays, setStreakDays] = useState(() => {
+5196:  const [completedLessons, setCompletedLessons] = useState(() => {
+5200:  const [earnedRewards, setEarnedRewards] = useState<{gems: number, stars: number, xp: number, leveledUp: boolean, newLevel: number} | null>(null);
+5211:  const [totalQuestionsAnswered, setTotalQuestionsAnswered] = useState(() => {
+5215:  const [totalCorrectAnswers, setTotalCorrectAnswers] = useState(() => {
+5219:  const [totalLearningTime, setTotalLearningTime] = useState(() => {
+5223:  const [subjectStats, setSubjectStats] = useState<Record<string, { total: number, correct: number, time: number, master: number }>>(() => {
+5259:  const [isSoundEnabled, setIsSoundEnabled] = useState(() => localStorage.getItem('isSoundEnabled') !== 'false');
+5297:  const [showResetConfirm, setShowResetConfirm] = useState(false);
+5300:  const [spinRotation, setSpinRotation] = useState(0);
+5301:  const [isSpinning, setIsSpinning] = useState(false);
+5302:  const [spinResult, setSpinResult] = useState<{icon: string, text: string, name: string} | null>(null);
+5303:  const [rewardsHistory, setRewardsHistory] = useState<{id: number, text: string, icon: string, name: string, time: string}[]>(() => {

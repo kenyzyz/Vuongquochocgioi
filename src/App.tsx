@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { auth, db } from './lib/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc, onSnapshot, getDocs, collection } from 'firebase/firestore';
 import { User, Mail, Book, Globe, Plus, Minus, Shuffle, Scale, Clock, Map, Target, Gamepad2, User as UserIcon, Trophy, Star, Gem, Flame, FileEdit, Settings, LogOut, ShoppingCart, RefreshCw, PenTool, Library, Pencil, MessageSquare, Palette, PawPrint, Hand, Users, X, Divide, Ruler, Search, BarChart3, Puzzle, Tag, Rewind, FastForward } from 'lucide-react';
 
 let audioCtx: any = null;
@@ -5100,6 +5103,29 @@ export default function App() {
           { name: 'Rồng con', url: 'https://i.postimg.cc/XYNTGNkk/dragon-level-1.png', levels: [{lvl: 1, url: 'https://i.postimg.cc/XYNTGNkk/dragon-level-1.png'}] }
         ]);
       }
+
+      // Sync users from Firebase
+      try {
+        const querySnapshot = await getDocs(collection(db, 'users'));
+        const localDb = JSON.parse(localStorage.getItem('appUsers') || '{}');
+        querySnapshot.forEach((doc) => {
+          const user = doc.data();
+          // Extract username backward from the email we generate "username@mathkid.app"
+          // We don't have the original username explicitly saved, but wait: loginUsername is mostly what we need.
+          // Let's just store the displayName instead if no username is available, or use a derived one.
+          // Wait, we explicitly have 'password' saved in localDB which we don't want to overwrite if not needed, 
+          // but we can merge. We also didn't save username. Oh well, doc.id is the UID! Not the username!
+          // Ah! doc(db, 'users', cred.user.uid) means doc.id is UID! The username is nowhere!
+          // We need to add username to the doc object!
+          if (user.displayName) {
+             const key = user.username || doc.id; 
+             localDb[key] = { ...localDb[key], ...user };
+          }
+        });
+        localStorage.setItem('appUsers', JSON.stringify(localDb));
+      } catch (err) {
+        console.log('Firebase fetch failed or not authenticated yet.');
+      }
     };
     
     fetchSheet();
@@ -5372,17 +5398,23 @@ export default function App() {
   // Continuous sync to appUsers DB
   useEffect(() => {
     if (isLoggedIn && validUsername && validUsername !== 'admin1' && validUsername !== '') {
-      const db = JSON.parse(localStorage.getItem('appUsers') || '{}');
-      if (!db[validUsername]) db[validUsername] = {};
-      db[validUsername] = {
-        ...db[validUsername],
+      const localDb = JSON.parse(localStorage.getItem('appUsers') || '{}');
+      if (!localDb[validUsername]) localDb[validUsername] = {};
+      const updatedObj = {
+        ...localDb[validUsername],
+        username: validUsername,
         password: validPassword,
         displayName, selectedChar, selectedPet, selectedClass, difficultyMode,
         stars, gems, tickets, level, xp, streakDays, completedLessons,
         totalQuestionsAnswered, totalCorrectAnswers, totalLearningTime,
         missions, rewardsHistory, subjectStats
       };
-      localStorage.setItem('appUsers', JSON.stringify(db));
+      localDb[validUsername] = updatedObj;
+      localStorage.setItem('appUsers', JSON.stringify(localDb));
+      
+      if (auth.currentUser) {
+        setDoc(doc(db, 'users', auth.currentUser.uid), updatedObj).catch(() => {});
+      }
     }
   }, [
     isLoggedIn, validUsername, validPassword, 
@@ -5467,7 +5499,7 @@ export default function App() {
     }, 3000);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setLoginError('');
     if (loginUsername === 'admin1' && loginPassword === '123456') {
       setIsLoggedIn(true);
@@ -5486,44 +5518,50 @@ export default function App() {
       setStreakDays(12);
       setCompletedLessons(859);
     } else {
-      const db = JSON.parse(localStorage.getItem('appUsers') || '{}');
-      // If legacy single user is trying to login, let them load their data if they match validUsername
-      const isLegacy = loginUsername === validUsername && loginPassword === validPassword && validUsername !== '';
-      const user = db[loginUsername] || (isLegacy ? { password: validPassword } : null);
-
-      if (user && user.password === loginPassword) {
+      try {
+        const email = `${loginUsername}@mathkid.app`;
+        const cred = await signInWithEmailAndPassword(auth, email, loginPassword);
+        
+        const userDoc = await getDoc(doc(db, 'users', cred.user.uid));
+        const userData = userDoc.data();
+        
         setIsLoggedIn(true);
         setCurrentView('home');
         setValidUsername(loginUsername);
         
-        if (db[loginUsername]) {
-          setDisplayName(user.displayName || '');
-          setSelectedChar(user.selectedChar || 'Boy');
-          setSelectedPet(user.selectedPet || 'Corgi Béo');
-          setSelectedClass(user.selectedClass || '1');
+        if (userData) {
+          setDisplayName(userData.displayName || '');
+          setSelectedChar(userData.selectedChar || 'Boy');
+          setSelectedPet(userData.selectedPet || 'Corgi Béo');
+          setSelectedClass(userData.selectedClass || '1');
           
-          if (user.stars !== undefined) setStars(user.stars);
-          if (user.gems !== undefined) setGems(user.gems);
-          if (user.tickets !== undefined) setTickets(user.tickets);
-          if (user.level !== undefined) setLevel(user.level);
-          if (user.xp !== undefined) setXp(user.xp);
-          if (user.streakDays !== undefined) setStreakDays(user.streakDays);
-          if (user.completedLessons !== undefined) setCompletedLessons(user.completedLessons);
-          if (user.totalQuestionsAnswered !== undefined) setTotalQuestionsAnswered(user.totalQuestionsAnswered);
-          if (user.totalCorrectAnswers !== undefined) setTotalCorrectAnswers(user.totalCorrectAnswers);
-          if (user.totalLearningTime !== undefined) setTotalLearningTime(user.totalLearningTime);
+          if (userData.stars !== undefined) setStars(userData.stars);
+          if (userData.gems !== undefined) setGems(userData.gems);
+          if (userData.tickets !== undefined) setTickets(userData.tickets);
+          if (userData.level !== undefined) setLevel(userData.level);
+          if (userData.xp !== undefined) setXp(userData.xp);
+          if (userData.streakDays !== undefined) setStreakDays(userData.streakDays);
+          if (userData.completedLessons !== undefined) setCompletedLessons(userData.completedLessons);
+          if (userData.totalQuestionsAnswered !== undefined) setTotalQuestionsAnswered(userData.totalQuestionsAnswered);
+          if (userData.totalCorrectAnswers !== undefined) setTotalCorrectAnswers(userData.totalCorrectAnswers);
+          if (userData.totalLearningTime !== undefined) setTotalLearningTime(userData.totalLearningTime);
           
-          if (user.missions) setMissions(user.missions);
-          if (user.rewardsHistory) setRewardsHistory(user.rewardsHistory);
-          if (user.subjectStats) setSubjectStats(user.subjectStats);
+          if (userData.missions) setMissions(userData.missions);
+          if (userData.rewardsHistory) setRewardsHistory(userData.rewardsHistory);
+          if (userData.subjectStats) setSubjectStats(userData.subjectStats);
           
-          setDifficultyMode(user.difficultyMode || 'Tự động');
+          setDifficultyMode(userData.difficultyMode || 'Tự động');
+
+          // Sync back to local map for Parent Stats table
+          const localDb = JSON.parse(localStorage.getItem('appUsers') || '{}');
+          localDb[loginUsername] = { ...userData, password: loginPassword };
+          localStorage.setItem('appUsers', JSON.stringify(localDb));
         }
 
         setEarnedRewards(null);
         
         let newMathLevel = '1';
-        switch (user.selectedClass || selectedClass) {
+        switch (userData?.selectedClass || selectedClass) {
           case '4': newMathLevel = '1'; break;
           case '5': newMathLevel = '2'; break;
           case '1': newMathLevel = '3'; break;
@@ -5534,13 +5572,63 @@ export default function App() {
           default: newMathLevel = '1';
         }
         setMathLevel(newMathLevel);
-      } else {
-        setLoginError('Vui lòng kiểm tra lại tài khoản hoặc mật khẩu!');
+      } catch (err: any) {
+        // Fallback for offline or local testing (legacy)
+        const db = JSON.parse(localStorage.getItem('appUsers') || '{}');
+        const isLegacy = loginUsername === validUsername && loginPassword === validPassword && validUsername !== '';
+        const user = db[loginUsername] || (isLegacy ? { password: validPassword } : null);
+
+        if (user && user.password === loginPassword) {
+          setIsLoggedIn(true);
+          setCurrentView('home');
+          setValidUsername(loginUsername);
+          
+          if (db[loginUsername]) {
+            setDisplayName(user.displayName || '');
+            setSelectedChar(user.selectedChar || 'Boy');
+            setSelectedPet(user.selectedPet || 'Corgi Béo');
+            setSelectedClass(user.selectedClass || '1');
+            
+            if (user.stars !== undefined) setStars(user.stars);
+            if (user.gems !== undefined) setGems(user.gems);
+            if (user.tickets !== undefined) setTickets(user.tickets);
+            if (user.level !== undefined) setLevel(user.level);
+            if (user.xp !== undefined) setXp(user.xp);
+            if (user.streakDays !== undefined) setStreakDays(user.streakDays);
+            if (user.completedLessons !== undefined) setCompletedLessons(user.completedLessons);
+            if (user.totalQuestionsAnswered !== undefined) setTotalQuestionsAnswered(user.totalQuestionsAnswered);
+            if (user.totalCorrectAnswers !== undefined) setTotalCorrectAnswers(user.totalCorrectAnswers);
+            if (user.totalLearningTime !== undefined) setTotalLearningTime(user.totalLearningTime);
+            
+            if (user.missions) setMissions(user.missions);
+            if (user.rewardsHistory) setRewardsHistory(user.rewardsHistory);
+            if (user.subjectStats) setSubjectStats(user.subjectStats);
+            
+            setDifficultyMode(user.difficultyMode || 'Tự động');
+          }
+
+          setEarnedRewards(null);
+          
+          let newMathLevel = '1';
+          switch (user.selectedClass || selectedClass) {
+            case '4': newMathLevel = '1'; break;
+            case '5': newMathLevel = '2'; break;
+            case '1': newMathLevel = '3'; break;
+            case '2': newMathLevel = '4'; break;
+            case '3': 
+            case '4c':
+            case '5c': newMathLevel = '5'; break;
+            default: newMathLevel = '1';
+          }
+          setMathLevel(newMathLevel);
+        } else {
+          setLoginError('Vui lòng kiểm tra lại tài khoản hoặc mật khẩu!');
+        }
       }
     }
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!regUsername || !regPassword) {
       alert('Vui lòng nhập Tên đăng nhập và Mật khẩu!');
       return;
@@ -5557,12 +5645,8 @@ export default function App() {
     localStorage.setItem('selectedPet', selectedPet);
     localStorage.setItem('selectedClass', selectedClass);
 
-    setIsLoggedIn(true);
-    setCurrentView('home');
-
-    // Create DB entry for new account
-    const db = JSON.parse(localStorage.getItem('appUsers') || '{}');
-    db[regUsername] = {
+    const newUserObj = {
+      username: regUsername,
       password: regPassword,
       displayName, selectedChar, selectedPet, selectedClass,
       difficultyMode: 'Tự động',
@@ -5593,7 +5677,22 @@ export default function App() {
         informatics: { total: 0, correct: 0, time: 0, master: 0 },
       }
     };
-    localStorage.setItem('appUsers', JSON.stringify(db));
+
+    try {
+      const email = `${regUsername}@mathkid.app`;
+      const cred = await createUserWithEmailAndPassword(auth, email, regPassword);
+      await setDoc(doc(db, 'users', cred.user.uid), newUserObj);
+    } catch (err: any) {
+      // Continue offline if firebase fails
+    }
+
+    setIsLoggedIn(true);
+    setCurrentView('home');
+
+    // Create DB entry for new account in localStorage
+    const localDb = JSON.parse(localStorage.getItem('appUsers') || '{}');
+    localDb[regUsername] = newUserObj;
+    localStorage.setItem('appUsers', JSON.stringify(localDb));
     
     // Clear old data for new account
     setScore(0);
@@ -6136,9 +6235,14 @@ export default function App() {
     }
   }, [currentView, selectedAnswer, lives, currentQIndex, maxTime]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsLoggedIn(false);
     setCurrentView('home');
+    try {
+      await signOut(auth);
+    } catch(err) {
+      console.log('Firebase signout failed');
+    }
   };
 
   const getLevelName = (level: string) => {
