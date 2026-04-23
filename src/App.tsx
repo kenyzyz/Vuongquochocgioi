@@ -8151,7 +8151,7 @@ export default function App() {
                     )}
 
                     <button onClick={() => startMathGame(currentOperation)} className="w-full bg-gradient-to-r from-pink-500 to-orange-400 text-white font-black text-lg py-4 rounded-2xl shadow-[0_4px_0_rgba(194,65,12,1)] active:translate-y-[4px] active:shadow-none transition-all">
-                      Chơi lại
+                      Chơi tiếp
                     </button>
                   </div>
                 </div>
