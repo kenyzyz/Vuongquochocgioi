@@ -6042,6 +6042,7 @@ export default function App() {
     setSelectedAnswer(null);
     setIsCorrect(null);
     setFeedback(null);
+    setEarnedRewards(null);
     const initialTime = getTimeForLevel(newQs[0].level);
     setMaxTime(initialTime);
     setTimeLeft(initialTime);
@@ -8276,6 +8277,10 @@ export default function App() {
                             <p className="text-white font-bold">Cấp độ mới: {earnedRewards.newLevel}</p>
                           </div>
                         )}
+                        <div className="mt-4 pt-4 border-t border-white/10 flex justify-center gap-4 text-[13px] sm:text-[15px] font-bold text-white">
+                          <span className="flex items-center"><Star className="w-4 h-4 text-yellow-400 fill-current mr-1" /> {stars}</span>
+                          <span className="flex items-center"><Gem className="w-4 h-4 text-[#00e5ff] fill-current mr-1" /> {gems}</span>
+                        </div>
                       </div>
                     )}
 
