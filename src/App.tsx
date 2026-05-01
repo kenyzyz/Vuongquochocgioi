@@ -5206,6 +5206,10 @@ export default function App() {
     const val = localStorage.getItem('gems');
     return val !== null ? Number(val) : 554;
   });
+  const [spentGems, setSpentGems] = useState(() => {
+    const val = localStorage.getItem('spentGems');
+    return val !== null ? Number(val) : 0;
+  });
   const [tickets, setTickets] = useState(() => {
     const val = localStorage.getItem('tickets');
     return val !== null ? Number(val) : 0;
@@ -5230,6 +5234,7 @@ export default function App() {
   
   useEffect(() => { localStorage.setItem('stars', String(stars)); }, [stars]);
   useEffect(() => { localStorage.setItem('gems', String(gems)); }, [gems]);
+  useEffect(() => { localStorage.setItem('spentGems', String(spentGems)); }, [spentGems]);
   useEffect(() => { localStorage.setItem('tickets', String(tickets)); }, [tickets]);
   useEffect(() => { localStorage.setItem('level', String(level)); }, [level]);
   useEffect(() => { localStorage.setItem('xp', String(xp)); }, [xp]);
@@ -5352,6 +5357,7 @@ export default function App() {
   const handleResetData = () => {
     setStars(0);
     setGems(0);
+    setSpentGems(0);
     setTickets(0);
     setLevel(1);
     setXp(0);
@@ -5398,6 +5404,18 @@ export default function App() {
     }
   };
 
+  const handleExchangeGems = (cost: number, itemName: string) => {
+    if (gems >= cost) {
+      if (window.confirm(`Bạn có chắc muốn đổi ${cost} Kim Cương lấy "${itemName}" không? (Hãy báo với bố mẹ để nhận thưởng phụ huynh xác nhận đổi nhé)`)) {
+        setGems(prev => prev - cost);
+        setSpentGems(prev => prev + cost);
+        alert(`Chúc mừng! Bạn đã đổi thành công "${itemName}". Kim cương còn lại: ${gems - cost}`);
+      }
+    } else {
+      alert('Bạn chưa đủ Kim Cương!');
+    }
+  };
+
   // Continuous sync to appUsers DB
   useEffect(() => {
     if (isLoggedIn && validUsername && validUsername !== 'admin1' && validUsername !== '') {
@@ -5408,7 +5426,7 @@ export default function App() {
         username: validUsername,
         password: validPassword,
         displayName, selectedChar, selectedPet, selectedClass, difficultyMode,
-        stars, gems, tickets, level, xp, streakDays, completedLessons,
+        stars, gems, spentGems, tickets, level, xp, streakDays, completedLessons,
         totalQuestionsAnswered, totalCorrectAnswers, totalLearningTime,
         missions, rewardsHistory, subjectStats
       };
@@ -5424,7 +5442,7 @@ export default function App() {
   }, [
     isLoggedIn, validUsername, validPassword, 
     displayName, selectedChar, selectedPet, selectedClass, difficultyMode,
-    stars, gems, tickets, level, xp, streakDays, completedLessons, 
+    stars, gems, spentGems, tickets, level, xp, streakDays, completedLessons, 
     totalQuestionsAnswered, totalCorrectAnswers, totalLearningTime, 
     missions, rewardsHistory, subjectStats
   ]);
@@ -5517,6 +5535,7 @@ export default function App() {
       setLives(3);
       setStars(10);
       setGems(554);
+      setSpentGems(0);
       setTickets(0);
       setLevel(13);
       setXp(472);
@@ -5543,6 +5562,7 @@ export default function App() {
           
           if (userData.stars !== undefined) setStars(userData.stars);
           if (userData.gems !== undefined) setGems(userData.gems);
+          if (userData.spentGems !== undefined) setSpentGems(userData.spentGems);
           if (userData.tickets !== undefined) setTickets(userData.tickets);
           if (userData.level !== undefined) setLevel(userData.level);
           if (userData.xp !== undefined) setXp(userData.xp);
@@ -5597,6 +5617,7 @@ export default function App() {
             
             if (user.stars !== undefined) setStars(user.stars);
             if (user.gems !== undefined) setGems(user.gems);
+            if (user.spentGems !== undefined) setSpentGems(user.spentGems);
             if (user.tickets !== undefined) setTickets(user.tickets);
             if (user.level !== undefined) setLevel(user.level);
             if (user.xp !== undefined) setXp(user.xp);
@@ -5717,6 +5738,7 @@ export default function App() {
     setLives(3);
     setStars(0);
     setGems(0);
+    setSpentGems(0);
     setTickets(0);
     setLevel(1);
     setXp(0);
@@ -7622,11 +7644,11 @@ export default function App() {
                         <span className="text-[#d4c5f9] font-bold text-[10px] sm:text-[12px]">Hiện có</span>
                       </div>
                       <div className="bg-black/20 rounded-xl p-3 flex flex-col items-center border border-white/5">
-                        <span className="text-[#ffdf6b] font-black text-2xl sm:text-3xl mb-1">0</span>
+                        <span className="text-[#ffdf6b] font-black text-2xl sm:text-3xl mb-1">{spentGems}</span>
                         <span className="text-[#d4c5f9] font-bold text-[10px] sm:text-[12px]">Đã đổi</span>
                       </div>
                       <div className="bg-black/20 rounded-xl p-3 flex flex-col items-center border border-white/5">
-                        <span className="text-[#ffdf6b] font-black text-2xl sm:text-3xl mb-1">{gems}</span>
+                        <span className="text-[#ffdf6b] font-black text-2xl sm:text-3xl mb-1">{gems + spentGems}</span>
                         <span className="text-[#d4c5f9] font-bold text-[10px] sm:text-[12px]">Tổng kiếm</span>
                       </div>
                     </div>
@@ -7656,7 +7678,9 @@ export default function App() {
                          </div>
                          <div className="flex items-center justify-between">
                            <span className="text-[#a895d1] text-[10px] font-bold">{Math.min(gems, 1000)}/1000 <Gem className="w-2.5 h-2.5 inline text-[#00e5ff] fill-current" /></span>
-                           <button className={`px-4 py-1.5 rounded-xl font-bold text-[12px] flex items-center gap-1.5 ${gems >= 1000 ? 'bg-[#00a8ff] hover:bg-[#00a8ff]/80 text-white' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
+                           <button 
+                             onClick={() => handleExchangeGems(1000, '30 Phút chơi điện thoại')}
+                             className={`px-4 py-1.5 rounded-xl font-bold text-[12px] flex items-center gap-1.5 ${gems >= 1000 ? 'bg-[#00a8ff] hover:bg-[#00a8ff]/80 text-white' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
                               <Gem className="w-3 h-3 fill-current" /> Cần 1000
                            </button>
                          </div>
@@ -7678,7 +7702,9 @@ export default function App() {
                          </div>
                          <div className="flex items-center justify-between">
                            <span className="text-[#a895d1] text-[10px] font-bold">{Math.min(gems, 2000)}/2000 <Gem className="w-2.5 h-2.5 inline text-[#00e5ff] fill-current" /></span>
-                           <button className={`px-4 py-1.5 rounded-xl font-bold text-[12px] flex items-center gap-1.5 ${gems >= 2000 ? 'bg-[#4ade80] hover:bg-[#4ade80]/80 text-black' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
+                           <button 
+                             onClick={() => handleExchangeGems(2000, '10.000 VNĐ Tiền mặt')}
+                             className={`px-4 py-1.5 rounded-xl font-bold text-[12px] flex items-center gap-1.5 ${gems >= 2000 ? 'bg-[#4ade80] hover:bg-[#4ade80]/80 text-black' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
                               <Gem className="w-3 h-3 fill-current" /> Cần 2000
                            </button>
                          </div>
@@ -7700,7 +7726,9 @@ export default function App() {
                          </div>
                          <div className="flex items-center justify-between">
                            <span className="text-[#a895d1] text-[10px] font-bold">{Math.min(gems, 5000)}/5000 <Gem className="w-2.5 h-2.5 inline text-[#00e5ff] fill-current" /></span>
-                           <button className={`px-4 py-1.5 rounded-xl font-bold text-[12px] flex items-center gap-1.5 ${gems >= 5000 ? 'bg-[#ffdf6b] hover:bg-[#ffdf6b]/80 text-black' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
+                           <button 
+                             onClick={() => handleExchangeGems(5000, 'Đi ăn Gà Jollibee')}
+                             className={`px-4 py-1.5 rounded-xl font-bold text-[12px] flex items-center gap-1.5 ${gems >= 5000 ? 'bg-[#ffdf6b] hover:bg-[#ffdf6b]/80 text-black' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
                               <Gem className="w-3 h-3 fill-current" /> Cần 5000
                            </button>
                          </div>
@@ -7722,7 +7750,9 @@ export default function App() {
                          </div>
                          <div className="flex items-center justify-between">
                            <span className="text-[#a895d1] text-[10px] font-bold">{Math.min(gems, 10000)}/10000 <Gem className="w-2.5 h-2.5 inline text-[#00e5ff] fill-current" /></span>
-                           <button className={`px-4 py-1.5 rounded-xl font-bold text-[12px] flex items-center gap-1.5 ${gems >= 10000 ? 'bg-white hover:bg-gray-200 text-black' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
+                           <button 
+                             onClick={() => handleExchangeGems(10000, 'Xe đạp mới')}
+                             className={`px-4 py-1.5 rounded-xl font-bold text-[12px] flex items-center gap-1.5 ${gems >= 10000 ? 'bg-white hover:bg-gray-200 text-black' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
                               <Gem className="w-3 h-3 fill-current" /> Cần 10000
                            </button>
                          </div>
